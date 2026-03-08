@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Shoplio.Console")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3d502c4507a1eae7405e66d7a89663eb848d5224")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7bec8a86cc10438039d650f80080fcca72a7942a")]
 [assembly: System.Reflection.AssemblyProductAttribute("Shoplio.Console")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Shoplio.Console")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
