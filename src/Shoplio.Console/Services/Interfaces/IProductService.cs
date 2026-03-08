@@ -9,4 +9,6 @@ public interface IProductService
     Product AddProduct(string name, string category, decimal price, int stock);
     bool UpdateProduct(Product product);
     bool DeleteProduct(int productId);
+    bool RestockProduct(int productId, int additionalStock);
+    IReadOnlyList<Product> GetLowStockProducts(int threshold);
 }

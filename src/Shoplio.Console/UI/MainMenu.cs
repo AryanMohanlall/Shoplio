@@ -4,11 +4,18 @@ using Shoplio.ConsoleApp.Utils;
 
 namespace Shoplio.ConsoleApp.UI;
 
-public sealed class MainMenu(IAuthService authService)
+public sealed class MainMenu(
+    IAuthService authService,
+    IProductService productService,
+    IOrderService orderService,
+    IReportService reportService)
 {
     private readonly IAuthService _authService = authService;
+    private readonly IProductService _productService = productService;
+    private readonly IOrderService _orderService = orderService;
+    private readonly IReportService _reportService = reportService;
     private readonly CustomerMenu _customerMenu = new();
-    private readonly AdminMenu _adminMenu = new();
+    private readonly AdminMenu _adminMenu = new(productService, orderService, reportService);
 
     public void Run()
     {
