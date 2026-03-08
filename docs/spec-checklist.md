@@ -3,31 +3,31 @@
 Mark each item when fully implemented and test-verified.
 
 ## Core Functional Requirements
-- [ ] User registration and login
-- [ ] Customer and Administrator role separation
-- [ ] Product catalog management
-- [ ] Shopping cart functionality
-- [ ] Order placement and tracking
-- [ ] Payment simulation through wallet balance
-- [ ] Inventory management and stock tracking
-- [ ] Administrative reporting and analytics
-- [ ] Product review and rating system
-- [ ] Exception handling and input validation
+- [x] User registration and login
+- [x] Customer and Administrator role separation
+- [x] Product catalog management
+- [x] Shopping cart functionality
+- [x] Order placement and tracking
+- [x] Payment simulation through wallet balance
+- [x] Inventory management and stock tracking
+- [x] Administrative reporting and analytics
+- [x] Product review and rating system
+- [x] Exception handling and input validation
 
 ## Console Interaction
-- [ ] Main menu includes Register, Login, Exit
-- [ ] Customer menu is complete and navigable
-- [ ] Administrator menu is complete and navigable
-- [ ] Numbered choices with invalid-input recovery
+- [x] Main menu includes Register, Login, Exit
+- [x] Customer menu is complete and navigable
+- [x] Administrator menu is complete and navigable
+- [x] Numbered choices with invalid-input recovery
 
 ## Data / Domain Coverage
-- [ ] User
-- [ ] Product
-- [ ] CartItem
-- [ ] Order
+- [x] User
+- [x] Product
+- [x] CartItem
+- [x] Order
 - [ ] OrderItem
-- [ ] Payment
-- [ ] Review
+- [x] Payment
+- [x] Review
 
 ## Submission 2 Enhancements
 - [ ] Design patterns applied

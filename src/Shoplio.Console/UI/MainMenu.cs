@@ -1,11 +1,20 @@
+using Shoplio.ConsoleApp.Models;
+using Shoplio.ConsoleApp.Services.Interfaces;
 using Shoplio.ConsoleApp.Utils;
 
 namespace Shoplio.ConsoleApp.UI;
 
-public sealed class MainMenu
+public sealed class MainMenu(
+    IAuthService authService,
+    IProductService productService,
+    ICartService cartService,
+    IOrderService orderService,
+    IReviewService reviewService,
+    IReportService reportService)
 {
-    private readonly CustomerMenu _customerMenu = new();
-    private readonly AdminMenu _adminMenu = new();
+    private readonly IAuthService _authService = authService;
+    private readonly CustomerMenu _customerMenu = new(productService, cartService, orderService, reviewService);
+    private readonly AdminMenu _adminMenu = new(productService, orderService, reportService);
 
     public void Run()
     {
@@ -25,13 +34,13 @@ public sealed class MainMenu
             switch (choice)
             {
                 case 1:
-                    ShowRegistrationStub();
+                    RegisterUser();
                     break;
                 case 2:
-                    _customerMenu.Show();
+                    LoginAs(Role.Customer);
                     break;
                 case 3:
-                    _adminMenu.Show();
+                    LoginAs(Role.Administrator);
                     break;
                 case 0:
                     running = false;
@@ -44,11 +53,73 @@ public sealed class MainMenu
         }
     }
 
-    private static void ShowRegistrationStub()
+    private void RegisterUser()
     {
         Console.Clear();
-        Console.WriteLine("Registration flow pending: implement AuthService and persistence.");
+        Console.WriteLine("== Register ==");
+
+        var name = InputReader.ReadRequired("Name: ");
+        var email = InputReader.ReadRequired("Email: ");
+        var password = InputReader.ReadRequired("Password (min 6 chars): ");
+
+        Console.WriteLine("Choose role:");
+        Console.WriteLine("1. Customer");
+        Console.WriteLine("2. Administrator");
+        var roleOption = InputReader.ReadInt("Role: ");
+        var role = roleOption == 2 ? Role.Administrator : Role.Customer;
+
+        try
+        {
+            var createdUser = _authService.Register(name, email, password, role);
+            Console.WriteLine();
+            Console.WriteLine($"Registered successfully as {createdUser.Role}.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine();
+            Console.WriteLine($"Registration failed: {ex.Message}");
+        }
+
         Console.WriteLine("Press Enter to return.");
         Console.ReadLine();
+    }
+
+    private void LoginAs(Role requiredRole)
+    {
+        Console.Clear();
+        Console.WriteLine($"== Login as {requiredRole} ==");
+
+        var email = InputReader.ReadRequired("Email: ");
+        var password = InputReader.ReadRequired("Password: ");
+
+        var user = _authService.Login(email, password);
+
+        if (user is null)
+        {
+            Console.WriteLine("Invalid credentials.");
+            Console.WriteLine("Press Enter to return.");
+            Console.ReadLine();
+            return;
+        }
+
+        if (user.Role != requiredRole)
+        {
+            Console.WriteLine($"Access denied. This account is registered as {user.Role}.");
+            Console.WriteLine("Press Enter to return.");
+            Console.ReadLine();
+            return;
+        }
+
+        Console.WriteLine($"Welcome, {user.Name}!");
+        Console.WriteLine("Press Enter to continue.");
+        Console.ReadLine();
+
+        if (requiredRole == Role.Customer)
+        {
+            _customerMenu.Show(user);
+            return;
+        }
+
+        _adminMenu.Show();
     }
 }

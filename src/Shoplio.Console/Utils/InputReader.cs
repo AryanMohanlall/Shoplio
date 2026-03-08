@@ -18,6 +18,22 @@ public static class InputReader
         }
     }
 
+    public static decimal ReadDecimal(string prompt)
+    {
+        while (true)
+        {
+            Console.Write(prompt);
+            var input = Console.ReadLine();
+
+            if (decimal.TryParse(input, out var value))
+            {
+                return value;
+            }
+
+            Console.WriteLine("Invalid decimal number. Try again.");
+        }
+    }
+
     public static string ReadRequired(string prompt)
     {
         while (true)
