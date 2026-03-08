@@ -77,7 +77,27 @@ dotnet restore Shoplio.slnx
 dotnet build Shoplio.slnx
 ```
 
-### 2. Apply migrations (create/update database schema)
+### 2. Run tests
+
+From repo root:
+
+```powershell
+dotnet test Shoplio.slnx
+```
+
+Run only the test project:
+
+```powershell
+dotnet test tests/Shoplio.Console.Tests/Shoplio.Console.Tests.csproj
+```
+
+Collect coverage:
+
+```powershell
+dotnet test Shoplio.slnx --collect:"XPlat Code Coverage"
+```
+
+### 3. Apply migrations (create/update database schema)
 
 From the project folder:
 
@@ -92,7 +112,7 @@ If `dotnet ef` is not installed:
 dotnet tool install --global dotnet-ef
 ```
 
-### 3. Run the app
+### 4. Run the app
 
 From repo root:
 
