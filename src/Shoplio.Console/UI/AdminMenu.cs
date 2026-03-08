@@ -104,18 +104,45 @@ public sealed class AdminMenu(
     {
         Console.Clear();
         Console.WriteLine("== Update Product ==");
+        Console.WriteLine();
 
-        var productId = InputReader.ReadInt("Product ID: ");
-        var existingProduct = _productService.GetAllProducts()
-            .FirstOrDefault(p => p.Id == productId);
+        var products = _productService.GetAllProducts();
 
-        if (existingProduct is null)
+        if (!products.Any())
         {
-            Console.WriteLine($"Product with ID {productId} not found.");
+            Console.WriteLine("No products available to update.");
             Console.WriteLine("Press Enter to continue.");
             Console.ReadLine();
             return;
         }
+
+        Console.WriteLine("Available Products:");
+        for (int i = 0; i < products.Count; i++)
+        {
+            var p = products[i];
+            Console.WriteLine($"{i + 1}. {p.Name} ({p.Category}) | ${p.Price:F2} | Stock: {p.Stock}");
+        }
+
+        Console.WriteLine();
+        Console.WriteLine("0. Cancel");
+        Console.WriteLine();
+
+        var choice = InputReader.ReadInt("Select product number to update: ");
+
+        if (choice == 0)
+        {
+            return;
+        }
+
+        if (choice < 1 || choice > products.Count)
+        {
+            Console.WriteLine("Invalid selection.");
+            Console.WriteLine("Press Enter to continue.");
+            Console.ReadLine();
+            return;
+        }
+
+        var existingProduct = products[choice - 1];
 
         Console.WriteLine();
         Console.WriteLine($"Current: {existingProduct.Name} | {existingProduct.Category} | ${existingProduct.Price} | Stock: {existingProduct.Stock}");
@@ -128,7 +155,7 @@ public sealed class AdminMenu(
 
         var updatedProduct = new Product
         {
-            Id = productId,
+            Id = existingProduct.Id,
             Name = name,
             Category = category,
             Price = price,
@@ -157,21 +184,48 @@ public sealed class AdminMenu(
     {
         Console.Clear();
         Console.WriteLine("== Delete Product ==");
+        Console.WriteLine();
 
-        var productId = InputReader.ReadInt("Product ID: ");
-        var existingProduct = _productService.GetAllProducts()
-            .FirstOrDefault(p => p.Id == productId);
+        var products = _productService.GetAllProducts();
 
-        if (existingProduct is null)
+        if (!products.Any())
         {
-            Console.WriteLine($"Product with ID {productId} not found.");
+            Console.WriteLine("No products available to delete.");
             Console.WriteLine("Press Enter to continue.");
             Console.ReadLine();
             return;
         }
 
+        Console.WriteLine("Available Products:");
+        for (int i = 0; i < products.Count; i++)
+        {
+            var p = products[i];
+            Console.WriteLine($"{i + 1}. {p.Name} ({p.Category}) | ${p.Price:F2} | Stock: {p.Stock}");
+        }
+
         Console.WriteLine();
-        Console.WriteLine($"Product: {existingProduct.Name} | {existingProduct.Category} | ${existingProduct.Price}");
+        Console.WriteLine("0. Cancel");
+        Console.WriteLine();
+
+        var choice = InputReader.ReadInt("Select product number to delete: ");
+
+        if (choice == 0)
+        {
+            return;
+        }
+
+        if (choice < 1 || choice > products.Count)
+        {
+            Console.WriteLine("Invalid selection.");
+            Console.WriteLine("Press Enter to continue.");
+            Console.ReadLine();
+            return;
+        }
+
+        var existingProduct = products[choice - 1];
+
+        Console.WriteLine();
+        Console.WriteLine($"Product: {existingProduct.Name} | {existingProduct.Category} | ${existingProduct.Price:F2}");
         Console.Write("Are you sure you want to delete this product? (y/n): ");
         var confirmation = Console.ReadLine()?.Trim().ToLowerInvariant();
 
@@ -183,7 +237,7 @@ public sealed class AdminMenu(
             return;
         }
 
-        var success = _productService.DeleteProduct(productId);
+        var success = _productService.DeleteProduct(existingProduct.Id);
         Console.WriteLine();
         Console.WriteLine(success
             ? "Product deleted successfully!"
@@ -197,18 +251,45 @@ public sealed class AdminMenu(
     {
         Console.Clear();
         Console.WriteLine("== Restock Product ==");
+        Console.WriteLine();
 
-        var productId = InputReader.ReadInt("Product ID: ");
-        var existingProduct = _productService.GetAllProducts()
-            .FirstOrDefault(p => p.Id == productId);
+        var products = _productService.GetAllProducts();
 
-        if (existingProduct is null)
+        if (!products.Any())
         {
-            Console.WriteLine($"Product with ID {productId} not found.");
+            Console.WriteLine("No products available to restock.");
             Console.WriteLine("Press Enter to continue.");
             Console.ReadLine();
             return;
         }
+
+        Console.WriteLine("Available Products:");
+        for (int i = 0; i < products.Count; i++)
+        {
+            var p = products[i];
+            Console.WriteLine($"{i + 1}. {p.Name} ({p.Category}) | Current Stock: {p.Stock}");
+        }
+
+        Console.WriteLine();
+        Console.WriteLine("0. Cancel");
+        Console.WriteLine();
+
+        var choice = InputReader.ReadInt("Select product number to restock: ");
+
+        if (choice == 0)
+        {
+            return;
+        }
+
+        if (choice < 1 || choice > products.Count)
+        {
+            Console.WriteLine("Invalid selection.");
+            Console.WriteLine("Press Enter to continue.");
+            Console.ReadLine();
+            return;
+        }
+
+        var existingProduct = products[choice - 1];
 
         Console.WriteLine();
         Console.WriteLine($"Product: {existingProduct.Name} | Current Stock: {existingProduct.Stock}");
@@ -217,7 +298,7 @@ public sealed class AdminMenu(
 
         try
         {
-            var success = _productService.RestockProduct(productId, additionalStock);
+            var success = _productService.RestockProduct(existingProduct.Id, additionalStock);
             Console.WriteLine();
             if (success)
             {
