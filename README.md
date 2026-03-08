@@ -1,7 +1,7 @@
 # Shoplio
 
 Shoplio is a C# console-based online shopping backend simulation project.
-It is designed to demonstrate backend system design, object-oriented programming, LINQ usage, error handling, and clean architecture in a menu-driven console environment.
+It demonstrates role-based workflows, in-memory repositories, layered architecture, and menu-driven backend logic for an e-commerce system.
 
 This project is aligned to a two-stage academic submission:
 - Submission 1: core backend functionality
@@ -14,33 +14,55 @@ This project is aligned to a two-stage academic submission:
 - Keep business logic cleanly separated from console UI
 - Prepare the codebase for extensibility and maintainability
 
-## Core Features (Specification)
+## Implemented Features
 
-- User registration and login
-- Role separation: Customer and Administrator
-- Product catalog management
-- Shopping cart operations
-- Order placement and tracking
-- Wallet-based payment simulation
-- Inventory and stock management
-- Administrative reporting and analytics
-- Product review and rating
-- Input validation and exception handling
+- User registration and login with role checks (`Customer`, `Administrator`)
+- Password hashing with salt (`SHA256`) in `AuthService`
+- Customer workflow:
+	- Browse products
+	- Search products
+	- Add to cart
+	- View cart
+	- Update cart quantity / remove by setting quantity to `0`
+	- Checkout using wallet balance
+	- View wallet balance
+	- Add wallet funds
+	- View order history
+	- Track orders
+	- Review products
+- Administrator workflow:
+	- Add product
+	- Update product
+	- Delete product
+	- Restock product
+	- View products
+	- View orders
+	- Update order status
+	- View low-stock products
+	- Generate sales report
+- In-memory repositories for users, products, and orders
+- Sales and low-stock reporting with LINQ
+- Input validation and user-friendly console prompts
 
 ## Current Status
 
-Scaffolded and ready for feature implementation:
+Functional Submission 1 baseline is implemented with in-memory persistence.
 
-- Solution and project setup complete (`Shoplio.slnx`, `src/Shoplio.Console`)
-- Domain models created:
-	- `User`, `Product`, `CartItem`, `Order`, `Payment`, `Review`
-	- `Role`, `OrderStatus`, `PaymentStatus`
-- Contracts created:
-	- Repository interfaces (`IUserRepository`, `IProductRepository`, `IOrderRepository`)
-	- Service interfaces (`IAuthService`, `IProductService`, `ICartService`, `IOrderService`, `IReportService`)
-- Menu skeletons created:
-	- Main menu, customer menu, admin menu
-- Input helper utility added (`InputReader`)
+- Main menu, customer menu, and administrator menu are wired and working
+- Services implemented:
+	- `AuthService`
+	- `ProductService`
+	- `CartService`
+	- `OrderService`
+	- `ReviewService`
+	- `ReportService`
+- Repositories implemented:
+	- `InMemoryUserRepository`
+	- `InMemoryProductRepository`
+	- `InMemoryOrderRepository`
+- App startup seeds:
+	- Default admin account: `admin@shoplio.local` / `admin123`
+	- Sample product catalog for testing
 
 Tracking documents:
 - `docs/plan.md`
@@ -56,7 +78,7 @@ The codebase follows a layered, clean structure:
 - `Models/`: domain entities and enums
 - `Utils/`: shared helper utilities
 
-Proposed flow:
+Runtime flow:
 
 1. User selects operation in `UI`
 2. UI invokes `Service` methods
@@ -64,31 +86,71 @@ Proposed flow:
 4. Services read/write data through `Repository` interfaces
 5. Models carry domain state across layers
 
+## Menu Overview
+
+### Main Menu
+
+- Register
+- Login as Customer
+- Login as Administrator
+- Exit
+
+### Customer Menu
+
+- Browse Products
+- Search Products
+- Add Product to Cart
+- View Cart
+- Update Cart
+- Checkout
+- View Wallet Balance
+- Add Wallet Funds
+- View Order History
+- Track Orders
+- Review Products
+- Logout
+
+### Administrator Menu
+
+- Add Product
+- Update Product
+- Delete Product
+- Restock Product
+- View Products
+- View Orders
+- Update Order Status
+- View Low Stock Products
+- Generate Sales Report
+- Logout
+
 ## Design Patterns
+
+### Currently Applied
+
+- Repository Pattern
+  - Implemented via repository interfaces and in-memory implementations
+- Service Layer Pattern
+  - Business logic is isolated from console UI interactions
 
 ### Planned for Submission 2
 
-- Repository Pattern:
-	- Purpose: isolate data storage and retrieval logic from business logic
-	- Location: `Repositories/` and repository interfaces
-
 - Strategy Pattern (Payment):
-	- Purpose: support extensible payment behaviors (starting with wallet)
-	- Example: `IPaymentStrategy` with `WalletPaymentStrategy`
+  - Purpose: support extensible payment behaviors beyond wallet simulation
+  - Example: `IPaymentStrategy` with `WalletPaymentStrategy`
 
 - Factory Pattern:
-	- Purpose: centralize creation of domain objects and seed data
-	- Example: user/product/order factories for controlled object construction
+  - Purpose: centralize creation of domain objects and seed data
+  - Example: user/product/order factories for controlled object construction
 
 - Optional Singleton (Session/App Context):
-	- Purpose: hold runtime session state in a controlled single instance
+  - Purpose: hold runtime session state in a controlled single instance
 
 ## Technology Stack
 
 - Language: C#
 - Runtime: .NET 10 (`net10.0`)
 - App type: Console application
-- IDE: Visual Studio Code (or Visual Studio)
+- IDE: Visual Studio Code / Visual Studio
 
 ## Project Structure
 
@@ -101,10 +163,22 @@ Shoplio/
 		Shoplio.Console/
 			Models/
 			Repositories/
+					InMemoryOrderRepository.cs
+					InMemoryProductRepository.cs
+					InMemoryUserRepository.cs
 				Interfaces/
 			Services/
+					AuthService.cs
+					CartService.cs
+					OrderService.cs
+					ProductService.cs
+					ReportService.cs
+					ReviewService.cs
 				Interfaces/
 			UI/
+					AdminMenu.cs
+					CustomerMenu.cs
+					MainMenu.cs
 			Utils/
 			Program.cs
 			Shoplio.Console.csproj
@@ -130,18 +204,25 @@ dotnet build Shoplio.slnx
 dotnet run --project src/Shoplio.Console/Shoplio.Console.csproj
 ```
 
+### Quick Test Credentials
+
+- Administrator:
+	- Email: `admin@shoplio.local`
+	- Password: `admin123`
+
+You can also register customer accounts from the main menu.
+
 ## Development Roadmap
 
-1. Implement in-memory repositories and seed data
-2. Implement `AuthService` and complete register/login flows
-3. Implement customer features: browse/search/cart/checkout/order history/reviews
-4. Implement admin features: product CRUD, restock, order view, reports
-5. Add robust validation and exception handling
-6. Introduce design patterns and refactor for Submission 2
+1. Improve domain constraints (for example: restrict reviews to purchased products)
+2. Introduce persistent storage (file/DB) instead of in-memory repositories
+3. Expand order lifecycle and payment strategy abstractions
+4. Add automated unit tests and integration tests
+5. Refactor for Submission 2 design-pattern depth and maintainability
 
-## LINQ Usage Plan
+## LINQ Usage
 
-LINQ will be used for:
+LINQ is currently used for:
 - Product search and filtering
 - Cart total and order total calculations
 - Sales aggregation and analytics
@@ -158,3 +239,4 @@ LINQ will be used for:
 
 - `spec.md` is used as the active requirement reference for this repository.
 - Some OCR artifacts may exist in the source spec text; use `docs/spec-checklist.md` as the implementation checklist of record.
+- `bin/` and `obj/` build artifacts are intentionally ignored via `.gitignore`.
