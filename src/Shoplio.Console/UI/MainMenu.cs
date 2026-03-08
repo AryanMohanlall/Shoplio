@@ -7,14 +7,13 @@ namespace Shoplio.ConsoleApp.UI;
 public sealed class MainMenu(
     IAuthService authService,
     IProductService productService,
+    ICartService cartService,
     IOrderService orderService,
+    IReviewService reviewService,
     IReportService reportService)
 {
     private readonly IAuthService _authService = authService;
-    private readonly IProductService _productService = productService;
-    private readonly IOrderService _orderService = orderService;
-    private readonly IReportService _reportService = reportService;
-    private readonly CustomerMenu _customerMenu = new();
+    private readonly CustomerMenu _customerMenu = new(productService, cartService, orderService, reviewService);
     private readonly AdminMenu _adminMenu = new(productService, orderService, reportService);
 
     public void Run()
@@ -117,7 +116,7 @@ public sealed class MainMenu(
 
         if (requiredRole == Role.Customer)
         {
-            _customerMenu.Show();
+            _customerMenu.Show(user);
             return;
         }
 

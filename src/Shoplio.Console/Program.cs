@@ -11,7 +11,9 @@ var orderRepository = new InMemoryOrderRepository();
 // Initialize services
 var authService = new AuthService(userRepository);
 var productService = new ProductService(productRepository);
-var orderService = new OrderService(orderRepository);
+var cartService = new CartService(productRepository);
+var reviewService = new ReviewService();
+var orderService = new OrderService(orderRepository, cartService, productRepository, userRepository);
 var reportService = new ReportService(orderRepository, productRepository);
 
 // Seed a default admin for immediate role-specific login testing
@@ -25,5 +27,5 @@ productService.AddProduct("Monitor", "Electronics", 299.99m, 3);
 productService.AddProduct("Desk Chair", "Furniture", 199.99m, 1);
 productService.AddProduct("Coffee Mug", "Home", 9.99m, 100);
 
-var mainMenu = new MainMenu(authService, productService, orderService, reportService);
+var mainMenu = new MainMenu(authService, productService, cartService, orderService, reviewService, reportService);
 mainMenu.Run();
