@@ -18,6 +18,43 @@ The project now uses SQL Server persistence via Entity Framework Core (instead o
 - Entity Framework Core 10
 - SQL Server (Docker supported)
 
+## Design Patterns
+
+This project implements several software design patterns for maintainability, testability, and scalability:
+
+### Repository Pattern
+- **Interfaces**: `IUserRepository`, `IProductRepository`, `IOrderRepository`
+- **Implementations**: Both in-memory (`InMemory*Repository`) and SQL-backed (`Sql*Repository`) variants
+- **Benefits**: Abstracts data access logic, enables easy swapping between data sources, simplifies testing
+
+### Dependency Injection (DI)
+- **Usage**: Constructor injection throughout services and repositories
+- **Example**: `AuthService(IUserRepository userRepository)`, `OrderService(IOrderRepository, ICartService, IProductRepository, IUserRepository)`
+- **Benefits**: Loose coupling, easier unit testing with mock dependencies, improved maintainability
+
+### Service Layer Pattern
+- **Structure**: Clear separation of concerns across layers:
+  - `UI` → User interaction and menu flows
+  - `Services` → Business logic (AuthService, OrderService, CartService, etc.)
+  - `Repositories` → Data access abstraction
+  - `Data` → Entity Framework DbContext and models
+- **Benefits**: Single Responsibility Principle, easier to test business logic in isolation
+
+### Factory Pattern
+- **Implementation**: `ShoplioDbContextFactory` implements `IDesignTimeDbContextFactory<ShoplioDbContext>`
+- **Usage**: Creates DbContext instances for EF Core design-time tools (migrations)
+- **Benefits**: Centralizes configuration, supports tooling scenarios
+
+### Strategy Pattern
+- **Implementation**: Interchangeable repository implementations (in-memory vs. SQL)
+- **Usage**: `Program.cs` can switch between `InMemoryUserRepository` and `SqlUserProvider` without changing service code
+- **Benefits**: Runtime flexibility, supports multiple storage strategies
+
+### Primary Constructor Pattern (C# 12+)
+- **Usage**: Simplified constructor syntax with automatic field initialization
+- **Example**: `public sealed class AuthService(IUserRepository userRepository) : IAuthService`
+- **Benefits**: Reduces boilerplate code, clearer intent
+
 ## Project Structure
 
 ```text
@@ -77,7 +114,27 @@ dotnet restore Shoplio.slnx
 dotnet build Shoplio.slnx
 ```
 
-### 2. Apply migrations (create/update database schema)
+### 2. Run tests
+
+From repo root:
+
+```powershell
+dotnet test Shoplio.slnx
+```
+
+Run only the test project:
+
+```powershell
+dotnet test tests/Shoplio.Console.Tests/Shoplio.Console.Tests.csproj
+```
+
+Collect coverage:
+
+```powershell
+dotnet test Shoplio.slnx --collect:"XPlat Code Coverage"
+```
+
+### 3. Apply migrations (create/update database schema)
 
 From the project folder:
 
@@ -92,7 +149,7 @@ If `dotnet ef` is not installed:
 dotnet tool install --global dotnet-ef
 ```
 
-### 3. Run the app
+### 4. Run the app
 
 From repo root:
 

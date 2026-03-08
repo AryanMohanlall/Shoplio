@@ -2,4 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/Shoplio.Console/Shoplio.Console.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Shoplio.Console.Tests/Shoplio.Console.Tests.csproj" />
+  </Folder>
 </Solution>
