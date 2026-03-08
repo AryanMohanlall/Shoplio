@@ -1,189 +1,66 @@
 # Shoplio
 
-Shoplio is a C# console-based online shopping backend simulation project.
-It demonstrates role-based workflows, in-memory repositories, layered architecture, and menu-driven backend logic for an e-commerce system.
+Shoplio is a C# console-based shopping backend simulation with role-based workflows for customers and administrators.
+The project now uses SQL Server persistence via Entity Framework Core (instead of only in-memory repositories).
 
-This project is aligned to a two-stage academic submission:
-- Submission 1: core backend functionality
-- Submission 2: design patterns and architecture improvements
+## Highlights
 
-## Project Objectives
-
-- Build a role-based shopping backend for `Customer` and `Administrator`
-- Implement realistic commerce workflows (catalog, cart, orders, payment, inventory)
-- Keep business logic cleanly separated from console UI
-- Prepare the codebase for extensibility and maintainability
-
-## Implemented Features
-
-- User registration and login with role checks (`Customer`, `Administrator`)
-- Password hashing with salt (`SHA256`) in `AuthService`
-- Customer workflow:
-	- Browse products
-	- Search products
-	- Add to cart
-	- View cart
-	- Update cart quantity / remove by setting quantity to `0`
-	- Checkout using wallet balance
-	- View wallet balance
-	- Add wallet funds
-	- View order history
-	- Track orders
-	- Review products
-- Administrator workflow:
-	- Add product
-	- Update product
-	- Delete product
-	- Restock product
-	- View products
-	- View orders
-	- Update order status
-	- View low-stock products
-	- Generate sales report
-- In-memory repositories for users, products, and orders
-- Sales and low-stock reporting with LINQ
-- Input validation and user-friendly console prompts
-
-## Current Status
-
-Functional Submission 1 baseline is implemented with in-memory persistence.
-
-- Main menu, customer menu, and administrator menu are wired and working
-- Services implemented:
-	- `AuthService`
-	- `ProductService`
-	- `CartService`
-	- `OrderService`
-	- `ReviewService`
-	- `ReportService`
-- Repositories implemented:
-	- `InMemoryUserRepository`
-	- `InMemoryProductRepository`
-	- `InMemoryOrderRepository`
-- App startup seeds:
-	- Default admin account: `admin@shoplio.local` / `admin123`
-	- Sample product catalog for testing
-
-Tracking documents:
-- `docs/plan.md`
-- `docs/spec-checklist.md`
-
-## Architecture
-
-The codebase follows a layered, clean structure:
-
-- `UI/`: console menu and user interaction layer
-- `Services/`: business rules and use-case logic
-- `Repositories/`: data access abstractions
-- `Models/`: domain entities and enums
-- `Utils/`: shared helper utilities
-
-Runtime flow:
-
-1. User selects operation in `UI`
-2. UI invokes `Service` methods
-3. Services coordinate rules and validations
-4. Services read/write data through `Repository` interfaces
-5. Models carry domain state across layers
-
-## Menu Overview
-
-### Main Menu
-
-- Register
-- Login as Customer
-- Login as Administrator
-- Exit
-
-### Customer Menu
-
-- Browse Products
-- Search Products
-- Add Product to Cart
-- View Cart
-- Update Cart
-- Checkout
-- View Wallet Balance
-- Add Wallet Funds
-- View Order History
-- Track Orders
-- Review Products
-- Logout
-
-### Administrator Menu
-
-- Add Product
-- Update Product
-- Delete Product
-- Restock Product
-- View Products
-- View Orders
-- Update Order Status
-- View Low Stock Products
-- Generate Sales Report
-- Logout
-
-## Design Patterns
-
-### Currently Applied
-
-- Repository Pattern
-  - Implemented via repository interfaces and in-memory implementations
-- Service Layer Pattern
-  - Business logic is isolated from console UI interactions
-
-### Planned for Submission 2
-
-- Strategy Pattern (Payment):
-  - Purpose: support extensible payment behaviors beyond wallet simulation
-  - Example: `IPaymentStrategy` with `WalletPaymentStrategy`
-
-- Factory Pattern:
-  - Purpose: centralize creation of domain objects and seed data
-  - Example: user/product/order factories for controlled object construction
-
-- Optional Singleton (Session/App Context):
-  - Purpose: hold runtime session state in a controlled single instance
+- Role-based authentication and authorization (`Customer`, `Administrator`)
+- Product catalog, cart, checkout, wallet, order tracking, and reviews
+- Admin operations for product/order management and reporting
+- Layered architecture (`UI` -> `Services` -> `Repositories` -> `Data`)
+- SQL Server persistence with EF Core migrations
 
 ## Technology Stack
 
-- Language: C#
-- Runtime: .NET 10 (`net10.0`)
-- App type: Console application
-- IDE: Visual Studio Code / Visual Studio
+- C#
+- .NET 10 (`net10.0`)
+- Entity Framework Core 10
+- SQL Server (Docker supported)
 
 ## Project Structure
 
 ```text
 Shoplio/
-	docs/
-		plan.md
-		spec-checklist.md
-	src/
-		Shoplio.Console/
-			Models/
-			Repositories/
-					InMemoryOrderRepository.cs
-					InMemoryProductRepository.cs
-					InMemoryUserRepository.cs
-				Interfaces/
-			Services/
-					AuthService.cs
-					CartService.cs
-					OrderService.cs
-					ProductService.cs
-					ReportService.cs
-					ReviewService.cs
-				Interfaces/
-			UI/
-					AdminMenu.cs
-					CustomerMenu.cs
-					MainMenu.cs
-			Utils/
-			Program.cs
-			Shoplio.Console.csproj
-	Shoplio.slnx
-	spec.md
+  src/
+    Shoplio.Console/
+      Data/
+        ShoplioDbContext.cs
+        ShoplioDbContextFactory.cs
+      Migrations/
+      Models/
+      Repositories/
+        Interfaces/
+        InMemory*.cs
+        Sql*.cs
+      Services/
+      UI/
+      Program.cs
+      appsettings.json
+      Shoplio.Console.csproj
+  docs/
+  Shoplio.slnx
+  README.md
+```
+
+## Database Setup
+
+### 1. Start SQL Server (Docker example)
+
+```powershell
+docker run -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=YourStrong@Passw0rd" -p 1433:1433 --name shoplio-sql -d mcr.microsoft.com/mssql/server:2022-latest
+```
+
+### 2. Configure connection string
+
+Update `src/Shoplio.Console/appsettings.json`:
+
+```json
+{
+  "ConnectionStrings": {
+    "ShoplioDb": "Server=localhost,1433;Database=ShoplioDb;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=true;"
+  }
+}
 ```
 
 ## Setup and Run
@@ -191,52 +68,110 @@ Shoplio/
 ### Prerequisites
 
 - .NET SDK 10+
+- SQL Server running (local instance or Docker)
 
-### Build
+### 1. Restore and build
 
 ```powershell
+dotnet restore Shoplio.slnx
 dotnet build Shoplio.slnx
 ```
 
-### Run
+### 2. Apply migrations (create/update database schema)
+
+From the project folder:
+
+```powershell
+cd src/Shoplio.Console
+dotnet ef database update
+```
+
+If `dotnet ef` is not installed:
+
+```powershell
+dotnet tool install --global dotnet-ef
+```
+
+### 3. Run the app
+
+From repo root:
 
 ```powershell
 dotnet run --project src/Shoplio.Console/Shoplio.Console.csproj
 ```
 
-### Quick Test Credentials
+## Default Seed Data
 
-- Administrator:
-	- Email: `admin@shoplio.local`
-	- Password: `admin123`
+On startup, the app seeds data only when missing:
 
-You can also register customer accounts from the main menu.
-
-## Development Roadmap
-
-1. Improve domain constraints (for example: restrict reviews to purchased products)
-2. Introduce persistent storage (file/DB) instead of in-memory repositories
-3. Expand order lifecycle and payment strategy abstractions
-4. Add automated unit tests and integration tests
-5. Refactor for Submission 2 design-pattern depth and maintainability
-
-## LINQ Usage
-
-LINQ is currently used for:
-- Product search and filtering
-- Cart total and order total calculations
-- Sales aggregation and analytics
-- Low-stock and top-selling reports
-
-## Quality and Validation
-
-- Guard all menu input using safe parsing (`TryParse` patterns)
-- Enforce business rules with clear exception messages
-- Keep methods focused and modular
-- Use interfaces for testability and maintainability
+- Admin user: `admin@shoplio.local` / `admin123`
+- Sample products: seeded when product table is empty
 
 ## Notes
 
-- `spec.md` is used as the active requirement reference for this repository.
-- Some OCR artifacts may exist in the source spec text; use `docs/spec-checklist.md` as the implementation checklist of record.
-- `bin/` and `obj/` build artifacts are intentionally ignored via `.gitignore`.
+- `bin/` and `obj/` are build artifacts and should not be tracked in Git.
+- The repository contains both in-memory and SQL repository implementations; `Program.cs` is currently wired to SQL repositories.
+- For schema evolution, create migrations with:
+
+```powershell
+cd src/Shoplio.Console
+dotnet ef migrations add <MigrationName>
+dotnet ef database update
+```
+
+## Troubleshooting
+
+### SQL Server connection failed
+
+**Error:** `Login failed for user 'sa'` or `A network-related or instance-specific error occurred`
+
+**Solutions:**
+- Verify SQL Server is running: `docker ps` (should show your container)
+- Check connection string password matches your Docker `SA_PASSWORD`
+- Ensure port 1433 is not blocked by firewall
+- For Docker: verify container is healthy with `docker logs shoplio-sql`
+
+### Port 1433 already in use
+
+**Error:** `Bind for 0.0.0.0:1433 failed: port is already allocated`
+
+**Solutions:**
+- Check if SQL Server is already running locally: stop it or use a different port
+- Use a different port in Docker: `-p 1434:1433` and update connection string to `localhost,1434`
+- Stop conflicting container: `docker stop <container-name>`
+
+### dotnet ef command not found
+
+**Error:** `Could not execute because the specified command or file was not found`
+
+**Solution:**
+```powershell
+dotnet tool install --global dotnet-ef
+```
+
+After installation, restart your terminal or IDE.
+
+### Build errors with Console namespace
+
+**Error:** `The type or namespace name 'WriteLine' does not exist in the namespace 'Shoplio.Console'`
+
+**Solution:**
+This was resolved by adding `GlobalUsings.cs` with a `Console` alias. If you encounter this:
+- Clean the build: `dotnet clean`
+- Rebuild: `dotnet build`
+- Ensure `GlobalUsings.cs` exists in the project root
+
+### Database already exists but schema is outdated
+
+**Solution:**
+Delete and recreate the database:
+```powershell
+cd src/Shoplio.Console
+dotnet ef database drop
+dotnet ef database update
+```
+
+Or apply pending migrations:
+```powershell
+dotnet ef database update
+```

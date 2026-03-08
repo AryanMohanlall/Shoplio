@@ -58,7 +58,7 @@ public sealed class OrderService(
         {
             UserId = userId,
             Items = cartItems
-                .Select(i => new CartItem
+                .Select(i => new OrderItem
                 {
                     ProductId = i.ProductId,
                     Quantity = i.Quantity,

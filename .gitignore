@@ -1,9 +1,9 @@
 # Build output
-[Bb]in/
-[Oo]bj/
-[Ll]og/
-[Ll]ogs/
-[Oo]ut/
+src/**/[Bb]in/
+src/**/[Oo]bj/
+src/**/[Ll]og/
+src/**/[Ll]ogs/
+src/**/[Oo]ut/
 
 # User-specific files
 *.user
