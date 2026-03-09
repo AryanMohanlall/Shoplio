@@ -14,7 +14,7 @@ public sealed class MainMenu(
 {
     private readonly IAuthService _authService = authService;
     private readonly CustomerMenu _customerMenu = new(productService, cartService, orderService, reviewService);
-    private readonly AdminMenu _adminMenu = new(productService, orderService, reportService);
+    private readonly AdminMenu _adminMenu = new(productService, orderService, reportService, reviewService);
 
     public void Run()
     {

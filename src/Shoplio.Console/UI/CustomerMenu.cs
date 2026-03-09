@@ -478,7 +478,7 @@ public sealed class CustomerMenu(
             var avgRating = reviews.Any() ? reviews.Average(r => r.Rating) : 0;
             var reviewCount = reviews.Count;
             
-            Console.WriteLine($"{i + 1}. {p.Name} ({p.Category}) - Avg Rating: {avgRating:F1}★ ({reviewCount} reviews)");
+            Console.WriteLine($"{i + 1}. {p.Name} ({p.Category}) - Avg Rating: {avgRating:F1}/5.0 ({reviewCount} reviews)");
         }
 
         Console.WriteLine();
@@ -511,13 +511,13 @@ public sealed class CustomerMenu(
         }
 
         var totalRating = productReviews.Average(r => r.Rating);
-        Console.WriteLine($"Average Rating: {totalRating:F1}★ ({productReviews.Count} reviews)");
+        Console.WriteLine($"Average Rating: {totalRating:F1}/5.0 ({productReviews.Count} reviews)");
         Console.WriteLine(new string('=', 60));
         Console.WriteLine();
 
         foreach (var review in productReviews)
         {
-            Console.WriteLine($"Rating: {new string('★', review.Rating)}{new string('☆', 5 - review.Rating)} ({review.Rating}/5)");
+            Console.WriteLine($"Rating: [{new string('*', review.Rating)}{new string('-', 5 - review.Rating)}] {review.Rating}/5");
             Console.WriteLine($"Date: {review.CreatedAt:yyyy-MM-dd HH:mm}");
             Console.WriteLine($"Comment: {review.Comment}");
             Console.WriteLine(new string('-', 60));

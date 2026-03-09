@@ -7,11 +7,13 @@ namespace Shoplio.ConsoleApp.UI;
 public sealed class AdminMenu(
     IProductService productService,
     IOrderService orderService,
-    IReportService reportService)
+    IReportService reportService,
+    IReviewService reviewService)
 {
     private readonly IProductService _productService = productService;
     private readonly IOrderService _orderService = orderService;
     private readonly IReportService _reportService = reportService;
+    private readonly IReviewService _reviewService = reviewService;
 
     public void Show()
     {
@@ -30,6 +32,7 @@ public sealed class AdminMenu(
             Console.WriteLine("7. Update Order Status");
             Console.WriteLine("8. View Low Stock Products");
             Console.WriteLine("9. Generate Sales Report");
+            Console.WriteLine("10. View Product Reviews");
             Console.WriteLine("0. Logout");
 
             var choice = InputReader.ReadInt("Select an option: ");
@@ -62,6 +65,9 @@ public sealed class AdminMenu(
                     break;
                 case 9:
                     GenerateSalesReport();
+                    break;
+                case 10:
+                    ViewProductReviews();
                     break;
                 case 0:
                     running = false;
@@ -458,6 +464,80 @@ public sealed class AdminMenu(
         foreach (var line in salesSummary)
         {
             Console.WriteLine(line);
+        }
+
+        Console.WriteLine();
+        Console.WriteLine("Press Enter to continue.");
+        Console.ReadLine();
+    }
+
+    private void ViewProductReviews()
+    {
+        Console.Clear();
+        Console.WriteLine("== View Product Reviews ==");
+        Console.WriteLine();
+
+        var products = _productService.GetAllProducts().ToList();
+        if (!products.Any())
+        {
+            Console.WriteLine("No products available.");
+            Console.WriteLine("Press Enter to continue.");
+            Console.ReadLine();
+            return;
+        }
+
+        for (var i = 0; i < products.Count; i++)
+        {
+            var p = products[i];
+            var reviews = _reviewService.GetReviewsByProductId(p.Id);
+            var avgRating = reviews.Any() ? reviews.Average(r => r.Rating) : 0;
+            var reviewCount = reviews.Count;
+            
+            Console.WriteLine($"{i + 1}. {p.Name} ({p.Category}) - Avg Rating: {avgRating:F1}/5.0 ({reviewCount} reviews)");
+        }
+
+        Console.WriteLine();
+        Console.WriteLine("0. Back");
+        var choice = InputReader.ReadInt("Select product to view reviews: ");
+        if (choice == 0)
+        {
+            return;
+        }
+
+        if (choice < 1 || choice > products.Count)
+        {
+            Console.WriteLine("Invalid selection.");
+            Console.WriteLine("Press Enter to continue.");
+            Console.ReadLine();
+            return;
+        }
+
+        var selectedProduct = products[choice - 1];
+        var productReviews = _reviewService.GetReviewsByProductId(selectedProduct.Id).ToList();
+
+        Console.Clear();
+        Console.WriteLine($"== Reviews for {selectedProduct.Name} ==");
+        Console.WriteLine();
+
+        if (!productReviews.Any())
+        {
+            Console.WriteLine("No reviews yet.");
+            Console.WriteLine("Press Enter to continue.");
+            Console.ReadLine();
+            return;
+        }
+
+        var totalRating = productReviews.Average(r => r.Rating);
+        Console.WriteLine($"Average Rating: {totalRating:F1}/5.0 ({productReviews.Count} reviews)");
+        Console.WriteLine(new string('=', 60));
+        Console.WriteLine();
+
+        foreach (var review in productReviews)
+        {
+            Console.WriteLine($"Rating: [{new string('*', review.Rating)}{new string('-', 5 - review.Rating)}] {review.Rating}/5");
+            Console.WriteLine($"Date: {review.CreatedAt:yyyy-MM-dd HH:mm}");
+            Console.WriteLine($"Comment: {review.Comment}");
+            Console.WriteLine(new string('-', 60));
         }
 
         Console.WriteLine();
