@@ -18,6 +18,29 @@ public static class InputReader
         }
     }
 
+    public static int ReadInt(string prompt, bool allowEmpty)
+    {
+        if (!allowEmpty)
+        {
+            return ReadInt(prompt);
+        }
+
+        Console.Write(prompt);
+        var input = Console.ReadLine();
+
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            return 0;
+        }
+
+        if (int.TryParse(input, out var value))
+        {
+            return value;
+        }
+
+        return 0;
+    }
+
     public static decimal ReadDecimal(string prompt)
     {
         while (true)

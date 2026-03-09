@@ -30,9 +30,8 @@ public sealed class AdminMenu(
             Console.WriteLine("5. View Products");
             Console.WriteLine("6. View Orders");
             Console.WriteLine("7. Update Order Status");
-            Console.WriteLine("8. View Low Stock Products");
-            Console.WriteLine("9. Generate Sales Report");
-            Console.WriteLine("10. View Product Reviews");
+            Console.WriteLine("8. Reports");
+            Console.WriteLine("9. View Product Reviews");
             Console.WriteLine("0. Logout");
 
             var choice = InputReader.ReadInt("Select an option: ");
@@ -61,12 +60,9 @@ public sealed class AdminMenu(
                     UpdateOrderStatus();
                     break;
                 case 8:
-                    ViewLowStockProducts();
+                    ShowReportsMenu();
                     break;
                 case 9:
-                    GenerateSalesReport();
-                    break;
-                case 10:
                     ViewProductReviews();
                     break;
                 case 0:
@@ -429,6 +425,163 @@ public sealed class AdminMenu(
             ? $"Order status updated to {newStatus}!"
             : "Failed to update order status.");
 
+        Console.WriteLine("Press Enter to continue.");
+        Console.ReadLine();
+    }
+
+    private void ShowReportsMenu()
+    {
+        var running = true;
+
+        while (running)
+        {
+            Console.Clear();
+            Console.WriteLine("== Reports Menu ==");
+            Console.WriteLine("1. Sales Summary");
+            Console.WriteLine("2. Orders by Status");
+            Console.WriteLine("3. Top Products by Revenue");
+            Console.WriteLine("4. Low Stock Products");
+            Console.WriteLine("0. Back to Main Menu");
+
+            var choice = InputReader.ReadInt("Select an option: ");
+
+            switch (choice)
+            {
+                case 1:
+                    ShowSalesSummary();
+                    break;
+                case 2:
+                    ShowOrdersByStatus();
+                    break;
+                case 3:
+                    ShowTopProducts();
+                    break;
+                case 4:
+                    ShowLowStockProducts();
+                    break;
+                case 0:
+                    running = false;
+                    break;
+                default:
+                    Console.WriteLine("Invalid option. Press Enter to continue.");
+                    Console.ReadLine();
+                    break;
+            }
+        }
+    }
+
+    private void ShowSalesSummary()
+    {
+        Console.Clear();
+        Console.WriteLine("== Sales Summary ==");
+        Console.WriteLine();
+
+        var (totalRevenue, totalOrders, avgOrderValue) = _reportService.GetSalesSummaryData();
+
+        if (totalOrders == 0)
+        {
+            Console.WriteLine("No orders found.");
+            Console.WriteLine();
+            Console.WriteLine("Press Enter to continue.");
+            Console.ReadLine();
+            return;
+        }
+
+        Console.WriteLine($"Total Orders:        {totalOrders}");
+        Console.WriteLine($"Total Revenue:       ${totalRevenue:F2}");
+        Console.WriteLine($"Average Order Value: ${avgOrderValue:F2}");
+        Console.WriteLine();
+        
+        Console.WriteLine("Press Enter to continue.");
+        Console.ReadLine();
+    }
+
+    private void ShowOrdersByStatus()
+    {
+        Console.Clear();
+        Console.WriteLine("== Orders by Status ==");
+        Console.WriteLine();
+
+        var ordersByStatus = _reportService.GetOrdersByStatus().ToList();
+
+        if (!ordersByStatus.Any())
+        {
+            Console.WriteLine("No orders found.");
+            Console.WriteLine();
+            Console.WriteLine("Press Enter to continue.");
+            Console.ReadLine();
+            return;
+        }
+
+        ConsoleChart.RenderCountChart(ordersByStatus);
+        
+        Console.WriteLine();
+        Console.WriteLine("Press Enter to continue.");
+        Console.ReadLine();
+    }
+
+    private void ShowTopProducts()
+    {
+        Console.Clear();
+        Console.WriteLine("== Top Products by Revenue ==");
+        Console.WriteLine();
+
+        var count = InputReader.ReadInt("How many products to show (default 10): ", allowEmpty: true);
+        if (count <= 0) count = 10;
+
+        Console.WriteLine();
+
+        var topProducts = _reportService.GetTopProductsData(count).ToList();
+
+        if (!topProducts.Any())
+        {
+            Console.WriteLine("No product sales data available.");
+            Console.WriteLine();
+            Console.WriteLine("Press Enter to continue.");
+            Console.ReadLine();
+            return;
+        }
+
+        var chartData = topProducts.Select(p => (p.ProductName, p.Revenue)).ToList();
+        ConsoleChart.RenderBarChart(chartData, 50);
+
+        Console.WriteLine();
+        Console.WriteLine("Press Enter to continue.");
+        Console.ReadLine();
+    }
+
+    private void ShowLowStockProducts()
+    {
+        Console.Clear();
+        Console.WriteLine("== Low Stock Products ==");
+        Console.WriteLine();
+
+        var threshold = InputReader.ReadInt("Stock Threshold (default 10): ", allowEmpty: true);
+        if (threshold <= 0) threshold = 10;
+
+        Console.WriteLine();
+
+        var lowStockProducts = _reportService.GetLowStockData(threshold).ToList();
+
+        if (!lowStockProducts.Any())
+        {
+            Console.WriteLine($"No products with stock <= {threshold}.");
+            Console.WriteLine();
+            Console.WriteLine("Press Enter to continue.");
+            Console.ReadLine();
+            return;
+        }
+
+        Console.WriteLine($"Products with stock <= {threshold}:");
+        Console.WriteLine();
+        
+        foreach (var product in lowStockProducts)
+        {
+            var indicator = ConsoleChart.RenderStockIndicator(product.Stock, threshold);
+            Console.WriteLine($"{product.ProductName,-30} ({product.Category,-15}) {indicator}");
+        }
+
+        Console.WriteLine();
         Console.WriteLine("Press Enter to continue.");
         Console.ReadLine();
     }
