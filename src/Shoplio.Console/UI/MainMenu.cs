@@ -60,7 +60,7 @@ public sealed class MainMenu(
 
         var name = InputReader.ReadRequired("Name: ");
         var email = InputReader.ReadRequired("Email: ");
-        var password = InputReader.ReadRequired("Password (min 6 chars): ");
+        var password = InputReader.ReadPassword("Password (min 6 chars): ");
 
         Console.WriteLine("Choose role:");
         Console.WriteLine("1. Customer");
@@ -90,7 +90,7 @@ public sealed class MainMenu(
         Console.WriteLine($"== Login as {requiredRole} ==");
 
         var email = InputReader.ReadRequired("Email: ");
-        var password = InputReader.ReadRequired("Password: ");
+        var password = InputReader.ReadPassword("Password: ");
 
         var user = _authService.Login(email, password);
 
