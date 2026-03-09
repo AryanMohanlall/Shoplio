@@ -18,42 +18,61 @@ The project now uses SQL Server persistence via Entity Framework Core (instead o
 - Entity Framework Core 10
 - SQL Server (Docker supported)
 
+## Architecture At A Glance
+
+Layered flow:
+
+- `UI` -> `Services` -> `Repositories` -> `Data` -> `SQL Server`
+
+Layer responsibilities:
+
+- `UI`: menu interaction and orchestration (`MainMenu`, `CustomerMenu`, `AdminMenu`)
+- `Services`: business workflows and validations (`AuthService`, `OrderService`, `CartService`, etc.)
+- `Repositories`: persistence abstraction through interfaces (`IUserRepository`, `IProductRepository`, `IOrderRepository`)
+- `Data`: EF Core mapping and schema (`ShoplioDbContext`, migrations)
+
+Architecture docs:
+
+- Full architecture/design notes: `docs/doc.md`
+- UML class diagrams: `docs/class-diagram.md`, `docs/uml-class-diagram.md`
+
 ## Design Patterns
 
-This project implements several software design patterns for maintainability, testability, and scalability:
+This project uses practical patterns to keep behavior testable and maintainable:
 
 ### Repository Pattern
-- **Interfaces**: `IUserRepository`, `IProductRepository`, `IOrderRepository`
-- **Implementations**: Both in-memory (`InMemory*Repository`) and SQL-backed (`Sql*Repository`) variants
-- **Benefits**: Abstracts data access logic, enables easy swapping between data sources, simplifies testing
-
-### Dependency Injection (DI)
-- **Usage**: Constructor injection throughout services and repositories
-- **Example**: `AuthService(IUserRepository userRepository)`, `OrderService(IOrderRepository, ICartService, IProductRepository, IUserRepository)`
-- **Benefits**: Loose coupling, easier unit testing with mock dependencies, improved maintainability
+- Interfaces: `IUserRepository`, `IProductRepository`, `IOrderRepository`
+- Implementations: in-memory (`InMemory*Repository`) and SQL (`Sql*Repository`)
+- Value: decouples business logic from data-access details
 
 ### Service Layer Pattern
-- **Structure**: Clear separation of concerns across layers:
-  - `UI` → User interaction and menu flows
-  - `Services` → Business logic (AuthService, OrderService, CartService, etc.)
-  - `Repositories` → Data access abstraction
-  - `Data` → Entity Framework DbContext and models
-- **Benefits**: Single Responsibility Principle, easier to test business logic in isolation
+- Business logic is centralized in services instead of UI classes
+- Value: clearer use-case boundaries and better unit-test coverage
 
-### Factory Pattern
-- **Implementation**: `ShoplioDbContextFactory` implements `IDesignTimeDbContextFactory<ShoplioDbContext>`
-- **Usage**: Creates DbContext instances for EF Core design-time tools (migrations)
-- **Benefits**: Centralizes configuration, supports tooling scenarios
+### Dependency Injection (Constructor Injection)
+- Services and repositories receive dependencies through constructors
+- Example: `OrderService(IOrderRepository, ICartService, IProductRepository, IUserRepository)`
+- Value: loose coupling and easier substitution in tests
 
-### Strategy Pattern
-- **Implementation**: Interchangeable repository implementations (in-memory vs. SQL)
-- **Usage**: `Program.cs` can switch between `InMemoryUserRepository` and `SqlUserProvider` without changing service code
-- **Benefits**: Runtime flexibility, supports multiple storage strategies
+### Strategy-Style Repository Selection
+- `Program.cs` chooses repository implementation at composition time
+- Current runtime uses SQL repositories (`SqlUserRepository`, `SqlProductRepository`, `SqlOrderRepository`)
+- Value: easy swap between persistence strategies without changing service code
+
+### Factory Pattern (Design-Time)
+- `ShoplioDbContextFactory` supports EF Core tooling and migrations
+- Value: reliable design-time DbContext creation
 
 ### Primary Constructor Pattern (C# 12+)
-- **Usage**: Simplified constructor syntax with automatic field initialization
-- **Example**: `public sealed class AuthService(IUserRepository userRepository) : IAuthService`
-- **Benefits**: Reduces boilerplate code, clearer intent
+- Services use primary constructors to reduce boilerplate
+- Example: `public sealed class AuthService(IUserRepository userRepository) : IAuthService`
+
+## Domain And Runtime Notes
+
+- Core entities: `User`, `Product`, `Order`, `OrderItem`, `Review`, `CartItem`, `Payment`
+- `OrderStatus` values are `Placed`, `Paid`, `Cancelled`
+- `Payment` and `PaymentStatus` exist in the domain but are not currently mapped as `DbSet` entries in `ShoplioDbContext`
+- `Program.cs` is the composition root that wires SQL repositories and services, then seeds initial admin/product data
 
 ## Project Structure
 
