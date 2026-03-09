@@ -94,4 +94,68 @@ public sealed class ReportService(IOrderRepository orderRepository, IProductRepo
             rank++;
         }
     }
+
+    public (decimal TotalRevenue, int TotalOrders, decimal AverageOrderValue) GetSalesSummaryData()
+    {
+        var orders = _orderRepository.GetAll();
+        
+        if (!orders.Any())
+        {
+            return (0, 0, 0);
+        }
+
+        var totalRevenue = orders.Sum(o => o.TotalAmount);
+        var totalOrders = orders.Count;
+        var avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+
+        return (totalRevenue, totalOrders, avgOrderValue);
+    }
+
+    public IEnumerable<(string Status, int Count)> GetOrdersByStatus()
+    {
+        var orders = _orderRepository.GetAll();
+        
+        return orders
+            .GroupBy(o => o.Status)
+            .Select(g => (g.Key.ToString(), g.Count()))
+            .OrderByDescending(x => x.Item2);
+    }
+
+    public IEnumerable<(string ProductName, decimal Revenue, int Quantity)> GetTopProductsData(int takeCount)
+    {
+        var orders = _orderRepository.GetAll();
+        
+        if (!orders.Any())
+        {
+            return Enumerable.Empty<(string, decimal, int)>();
+        }
+
+        var productSales = orders
+            .SelectMany(o => o.Items)
+            .GroupBy(item => item.ProductId)
+            .Select(g => new
+            {
+                ProductId = g.Key,
+                TotalQuantity = g.Sum(item => item.Quantity),
+                TotalRevenue = g.Sum(item => item.LineTotal)
+            })
+            .OrderByDescending(p => p.TotalRevenue)
+            .Take(takeCount)
+            .ToList();
+
+        return productSales.Select(sale =>
+        {
+            var product = _productRepository.GetById(sale.ProductId);
+            var productName = product?.Name ?? "Unknown Product";
+            return (productName, sale.TotalRevenue, sale.TotalQuantity);
+        });
+    }
+
+    public IEnumerable<(int ProductId, string ProductName, int Stock, string Category)> GetLowStockData(int threshold)
+    {
+        return _productRepository.GetAll()
+            .Where(p => p.Stock <= threshold)
+            .OrderBy(p => p.Stock)
+            .Select(p => (p.Id, p.Name, p.Stock, p.Category));
+    }
 }
