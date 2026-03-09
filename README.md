@@ -3,6 +3,12 @@
 Shoplio is a C# console-based shopping backend simulation with role-based workflows for customers and administrators.
 The project now uses SQL Server persistence via Entity Framework Core (instead of only in-memory repositories).
 
+## Documentation
+
+- **[Architecture & Design](docs/doc.md)** - Complete document covering layered architecture, design patterns (Repository, Service Layer, DI, Factory), domain model notes, business flows, and extension guidelines
+- **[UML Class Diagrams](docs/class-diagram.md)** - Visual Mermaid diagrams showing domain models, repository/service relationships, and UI composition
+- **[Architecture Diagram](docs/Layered%20Service%20Architecture-2026-03-09-112653.png)** - High-level visual architecture flowchart
+
 ## Highlights
 
 - Role-based authentication and authorization (`Customer`, `Administrator`)
@@ -30,11 +36,6 @@ Layer responsibilities:
 - `Services`: business workflows and validations (`AuthService`, `OrderService`, `CartService`, etc.)
 - `Repositories`: persistence abstraction through interfaces (`IUserRepository`, `IProductRepository`, `IOrderRepository`)
 - `Data`: EF Core mapping and schema (`ShoplioDbContext`, migrations)
-
-Architecture docs:
-
-- Full architecture/design notes: `docs/doc.md`
-- UML class diagrams: `docs/class-diagram.md`, `docs/uml-class-diagram.md`
 
 ## Design Patterns
 
