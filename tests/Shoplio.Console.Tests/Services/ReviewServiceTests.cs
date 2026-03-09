@@ -1,4 +1,5 @@
 using Shoplio.ConsoleApp.Services;
+using Shoplio.ConsoleApp.Repositories;
 
 namespace Shoplio.Console.Tests.Services;
 
@@ -7,7 +8,7 @@ public sealed class ReviewServiceTests
     [Fact]
     public void AddReview_InvalidRating_ThrowsArgumentException()
     {
-        var sut = new ReviewService();
+        var sut = new ReviewService(new InMemoryReviewRepository());
 
         var action = () => sut.AddReview(1, 1, 0, "bad");
 
@@ -17,7 +18,7 @@ public sealed class ReviewServiceTests
     [Fact]
     public void AddReview_AssignsIdAndTrimsComment()
     {
-        var sut = new ReviewService();
+        var sut = new ReviewService(new InMemoryReviewRepository());
 
         var review = sut.AddReview(2, 3, 5, "  Great product  ");
 
@@ -31,7 +32,7 @@ public sealed class ReviewServiceTests
     [Fact]
     public void GetReviewsByProductId_ReturnsNewestFirst()
     {
-        var sut = new ReviewService();
+        var sut = new ReviewService(new InMemoryReviewRepository());
         var first = sut.AddReview(1, 10, 4, "first");
         var second = sut.AddReview(2, 10, 5, "second");
         first.CreatedAt = DateTime.UtcNow.AddMinutes(-10);
