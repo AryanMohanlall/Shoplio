@@ -48,4 +48,61 @@ public static class InputReader
             Console.WriteLine("Value is required. Try again.");
         }
     }
+
+    public static string ReadPassword(string prompt)
+    {
+        while (true)
+        {
+            Console.Write(prompt);
+
+            // Fallback for redirected input (tests/pipes) where ReadKey is unavailable.
+            if (Console.IsInputRedirected)
+            {
+                var redirected = Console.ReadLine();
+                if (!string.IsNullOrWhiteSpace(redirected))
+                {
+                    return redirected.Trim();
+                }
+
+                Console.WriteLine("Password is required. Try again.");
+                continue;
+            }
+
+            var buffer = new List<char>();
+            while (true)
+            {
+                var key = Console.ReadKey(intercept: true);
+
+                if (key.Key == ConsoleKey.Enter)
+                {
+                    break;
+                }
+
+                if (key.Key == ConsoleKey.Backspace)
+                {
+                    if (buffer.Count > 0)
+                    {
+                        buffer.RemoveAt(buffer.Count - 1);
+                    }
+
+                    continue;
+                }
+
+                if (!char.IsControl(key.KeyChar))
+                {
+                    buffer.Add(key.KeyChar);
+                }
+            }
+
+            Console.WriteLine();
+
+            var value = new string(buffer.ToArray()).Trim();
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+
+            Console.WriteLine("Password is required. Try again.");
+        }
+    }
 }

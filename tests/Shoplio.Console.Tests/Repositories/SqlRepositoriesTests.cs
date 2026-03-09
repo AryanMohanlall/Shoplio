@@ -94,4 +94,97 @@ public sealed class SqlRepositoriesTests
         Assert.Equal("Mouse", loaded.Items[0].Product.Name);
         Assert.Equal(50m, loaded.Items[0].LineTotal);
     }
+
+    [Fact]
+    public void SqlReviewRepository_AddAndGetByProductId_Works()
+    {
+        using var context = DbContextTestFactory.Create();
+
+        var user = new User
+        {
+            Name = "Reviewer",
+            Email = "reviewer@example.com",
+            Password = "hash",
+            Role = Role.Customer,
+            WalletBalance = 0m
+        };
+        var product = new Product
+        {
+            Name = "Keyboard",
+            Category = "Electronics",
+            Price = 79m,
+            Stock = 20
+        };
+        context.Users.Add(user);
+        context.Products.Add(product);
+        context.SaveChanges();
+
+        var repo = new SqlReviewRepository(context);
+        repo.Add(new Review
+        {
+            UserId = user.Id,
+            ProductId = product.Id,
+            Rating = 5,
+            Comment = "Excellent",
+            CreatedAt = DateTime.UtcNow
+        });
+
+        var reviews = repo.GetByProductId(product.Id);
+
+        Assert.Single(reviews);
+        Assert.Equal("Excellent", reviews[0].Comment);
+        Assert.Equal(5, reviews[0].Rating);
+    }
+
+    [Fact]
+    public void SqlReviewRepository_GetByProductId_ReturnsNewestFirstAndFilters()
+    {
+        using var context = DbContextTestFactory.Create();
+
+        var user = new User
+        {
+            Name = "Reviewer",
+            Email = "reviewer2@example.com",
+            Password = "hash",
+            Role = Role.Customer,
+            WalletBalance = 0m
+        };
+        var productA = new Product { Name = "A", Category = "Cat", Price = 10m, Stock = 10 };
+        var productB = new Product { Name = "B", Category = "Cat", Price = 20m, Stock = 10 };
+        context.Users.Add(user);
+        context.Products.AddRange(productA, productB);
+        context.SaveChanges();
+
+        var repo = new SqlReviewRepository(context);
+        repo.Add(new Review
+        {
+            UserId = user.Id,
+            ProductId = productA.Id,
+            Rating = 3,
+            Comment = "older",
+            CreatedAt = DateTime.UtcNow.AddMinutes(-5)
+        });
+        repo.Add(new Review
+        {
+            UserId = user.Id,
+            ProductId = productA.Id,
+            Rating = 4,
+            Comment = "newer",
+            CreatedAt = DateTime.UtcNow
+        });
+        repo.Add(new Review
+        {
+            UserId = user.Id,
+            ProductId = productB.Id,
+            Rating = 5,
+            Comment = "other product",
+            CreatedAt = DateTime.UtcNow
+        });
+
+        var reviews = repo.GetByProductId(productA.Id);
+
+        Assert.Equal(2, reviews.Count);
+        Assert.Equal("newer", reviews[0].Comment);
+        Assert.Equal("older", reviews[1].Comment);
+    }
 }

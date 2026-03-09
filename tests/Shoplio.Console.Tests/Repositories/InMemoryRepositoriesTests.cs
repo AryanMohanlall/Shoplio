@@ -57,4 +57,59 @@ public sealed class InMemoryRepositoriesTests
         Assert.Equal(2, userOrders.Count);
         Assert.All(userOrders, o => Assert.Equal(1, o.UserId));
     }
+
+    [Fact]
+    public void InMemoryReviewRepository_Add_AssignsIncrementingIds()
+    {
+        var repo = new InMemoryReviewRepository();
+
+        var first = new Review { UserId = 1, ProductId = 10, Rating = 4, Comment = "Good" };
+        var second = new Review { UserId = 2, ProductId = 10, Rating = 5, Comment = "Great" };
+
+        repo.Add(first);
+        repo.Add(second);
+
+        Assert.Equal(1, first.Id);
+        Assert.Equal(2, second.Id);
+    }
+
+    [Fact]
+    public void InMemoryReviewRepository_GetByProductId_FiltersAndSortsNewestFirst()
+    {
+        var repo = new InMemoryReviewRepository();
+
+        var older = new Review
+        {
+            UserId = 1,
+            ProductId = 5,
+            Rating = 3,
+            Comment = "older",
+            CreatedAt = DateTime.UtcNow.AddHours(-1)
+        };
+        var newer = new Review
+        {
+            UserId = 2,
+            ProductId = 5,
+            Rating = 5,
+            Comment = "newer",
+            CreatedAt = DateTime.UtcNow
+        };
+        var otherProduct = new Review
+        {
+            UserId = 3,
+            ProductId = 9,
+            Rating = 4,
+            Comment = "other"
+        };
+
+        repo.Add(older);
+        repo.Add(newer);
+        repo.Add(otherProduct);
+
+        var reviews = repo.GetByProductId(5);
+
+        Assert.Equal(2, reviews.Count);
+        Assert.Equal("newer", reviews[0].Comment);
+        Assert.Equal("older", reviews[1].Comment);
+    }
 }

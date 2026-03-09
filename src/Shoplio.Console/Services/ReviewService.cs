@@ -1,12 +1,12 @@
 using Shoplio.ConsoleApp.Models;
+using Shoplio.ConsoleApp.Repositories.Interfaces;
 using Shoplio.ConsoleApp.Services.Interfaces;
 
 namespace Shoplio.ConsoleApp.Services;
 
-public sealed class ReviewService : IReviewService
+public sealed class ReviewService(IReviewRepository reviewRepository) : IReviewService
 {
-    private readonly List<Review> _reviews = [];
-    private int _nextId = 1;
+    private readonly IReviewRepository _reviewRepository = reviewRepository;
 
     public Review AddReview(int userId, int productId, int rating, string comment)
     {
@@ -17,7 +17,6 @@ public sealed class ReviewService : IReviewService
 
         var review = new Review
         {
-            Id = _nextId++,
             UserId = userId,
             ProductId = productId,
             Rating = rating,
@@ -25,15 +24,12 @@ public sealed class ReviewService : IReviewService
             CreatedAt = DateTime.UtcNow
         };
 
-        _reviews.Add(review);
+        _reviewRepository.Add(review);
         return review;
     }
 
     public IReadOnlyList<Review> GetReviewsByProductId(int productId)
     {
-        return _reviews
-            .Where(r => r.ProductId == productId)
-            .OrderByDescending(r => r.CreatedAt)
-            .ToList();
+        return _reviewRepository.GetByProductId(productId);
     }
 }

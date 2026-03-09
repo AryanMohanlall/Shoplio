@@ -28,12 +28,13 @@ dbContext.Database.EnsureCreated();
 var userRepository = new SqlUserRepository(dbContext);
 var productRepository = new SqlProductRepository(dbContext);
 var orderRepository = new SqlOrderRepository(dbContext);
+var reviewRepository = new SqlReviewRepository(dbContext);
 
 // Initialize services
 var authService = new AuthService(userRepository);
 var productService = new ProductService(productRepository);
 var cartService = new CartService(productRepository);
-var reviewService = new ReviewService();
+var reviewService = new ReviewService(reviewRepository);
 var orderService = new OrderService(orderRepository, cartService, productRepository, userRepository);
 var reportService = new ReportService(orderRepository, productRepository);
 

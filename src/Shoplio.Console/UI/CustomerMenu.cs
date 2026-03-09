@@ -33,7 +33,8 @@ public sealed class CustomerMenu(
             Console.WriteLine("8. Add Wallet Funds");
             Console.WriteLine("9. View Order History");
             Console.WriteLine("10. Track Orders");
-            Console.WriteLine("11. Review Products");
+            Console.WriteLine("11. Add Product Review");
+            Console.WriteLine("12. View Product Reviews");
             Console.WriteLine("0. Logout");
 
             var choice = InputReader.ReadInt("Select an option: ");
@@ -71,7 +72,10 @@ public sealed class CustomerMenu(
                     TrackOrders(user.Id);
                     break;
                 case 11:
-                    ReviewProducts(user.Id);
+                    AddProductReview(user.Id);
+                    break;
+                case 12:
+                    ViewProductReviews();
                     break;
                 case 0:
                     running = false;
@@ -401,10 +405,10 @@ public sealed class CustomerMenu(
         Pause();
     }
 
-    private void ReviewProducts(int userId)
+    private void AddProductReview(int userId)
     {
         Console.Clear();
-        Console.WriteLine("== Review Products ==");
+        Console.WriteLine("== Add Product Review ==");
         Console.WriteLine();
 
         var products = _productService.GetAllProducts().ToList();
@@ -448,6 +452,75 @@ public sealed class CustomerMenu(
         catch (Exception ex)
         {
             Console.WriteLine($"Could not submit review: {ex.Message}");
+        }
+
+        Pause();
+    }
+
+    private void ViewProductReviews()
+    {
+        Console.Clear();
+        Console.WriteLine("== View Product Reviews ==");
+        Console.WriteLine();
+
+        var products = _productService.GetAllProducts().ToList();
+        if (!products.Any())
+        {
+            Console.WriteLine("No products available.");
+            Pause();
+            return;
+        }
+
+        for (var i = 0; i < products.Count; i++)
+        {
+            var p = products[i];
+            var reviews = _reviewService.GetReviewsByProductId(p.Id);
+            var avgRating = reviews.Any() ? reviews.Average(r => r.Rating) : 0;
+            var reviewCount = reviews.Count;
+            
+            Console.WriteLine($"{i + 1}. {p.Name} ({p.Category}) - Avg Rating: {avgRating:F1}/5.0 ({reviewCount} reviews)");
+        }
+
+        Console.WriteLine();
+        Console.WriteLine("0. Back");
+        var choice = InputReader.ReadInt("Select product to view reviews: ");
+        if (choice == 0)
+        {
+            return;
+        }
+
+        if (choice < 1 || choice > products.Count)
+        {
+            Console.WriteLine("Invalid selection.");
+            Pause();
+            return;
+        }
+
+        var selectedProduct = products[choice - 1];
+        var productReviews = _reviewService.GetReviewsByProductId(selectedProduct.Id).ToList();
+
+        Console.Clear();
+        Console.WriteLine($"== Reviews for {selectedProduct.Name} ==");
+        Console.WriteLine();
+
+        if (!productReviews.Any())
+        {
+            Console.WriteLine("No reviews yet. Be the first to review this product!");
+            Pause();
+            return;
+        }
+
+        var totalRating = productReviews.Average(r => r.Rating);
+        Console.WriteLine($"Average Rating: {totalRating:F1}/5.0 ({productReviews.Count} reviews)");
+        Console.WriteLine(new string('=', 60));
+        Console.WriteLine();
+
+        foreach (var review in productReviews)
+        {
+            Console.WriteLine($"Rating: [{new string('*', review.Rating)}{new string('-', 5 - review.Rating)}] {review.Rating}/5");
+            Console.WriteLine($"Date: {review.CreatedAt:yyyy-MM-dd HH:mm}");
+            Console.WriteLine($"Comment: {review.Comment}");
+            Console.WriteLine(new string('-', 60));
         }
 
         Pause();
