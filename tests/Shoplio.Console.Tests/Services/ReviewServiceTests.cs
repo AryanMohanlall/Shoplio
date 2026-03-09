@@ -44,4 +44,25 @@ public sealed class ReviewServiceTests
         Assert.Equal(second.Id, reviews[0].Id);
         Assert.Equal(first.Id, reviews[1].Id);
     }
+
+    [Fact]
+    public void AddReview_NullComment_StoresEmptyString()
+    {
+        var sut = new ReviewService(new InMemoryReviewRepository());
+
+        var review = sut.AddReview(1, 2, 4, null!);
+
+        Assert.Equal(string.Empty, review.Comment);
+    }
+
+    [Fact]
+    public void GetReviewsByProductId_UnknownProduct_ReturnsEmpty()
+    {
+        var sut = new ReviewService(new InMemoryReviewRepository());
+        sut.AddReview(1, 10, 4, "exists");
+
+        var reviews = sut.GetReviewsByProductId(999);
+
+        Assert.Empty(reviews);
+    }
 }
